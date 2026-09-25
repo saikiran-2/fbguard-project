@@ -76,5 +76,3 @@ docker compose up --build
 - Admin: `admin` / whatever `ADMIN_PASSWORD` is set to
 
 See `DEPLOYMENT.md` for putting this online for free, and
-`CONCEPTS_NOTES.md` for a plain-language explainer of every advanced
-concept used in this project.
