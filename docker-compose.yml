@@ -1,0 +1,77 @@
+# Local development stack: MySQL + Kafka (+ Zookeeper) + backend + frontend.
+# This is for running everything on your own machine. For the free public
+# deployment, see DEPLOYMENT.md - most free hosts don't run docker-compose
+# directly, so backend/frontend/DB/Kafka get deployed to separate free services instead.
+#
+# Credentials below are read from a .env file in this same folder (never
+# committed to git) - see .env.example for the format.
+
+
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: fbguard
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - kafka
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/fbguard?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # Email notifications are off by default locally. To try them, set a real
+      # Gmail app-password (or any SMTP provider) and flip NOTIFICATIONS_ENABLED.
+      NOTIFICATIONS_ENABLED: "false"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads-data:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8080/api
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql-data:
+  uploads-data:

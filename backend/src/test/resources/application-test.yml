@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:fbguard_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: false
+  sql:
+    init:
+      mode: never # skip data.sql demo seed data during tests
+  kafka:
+    bootstrap-servers: localhost:9092 # not actually reached in tests; sends/consumes just log warnings
+
+security:
+  jwt:
+    secret: test-only-secret-key-not-used-in-production-1234567890
+app:
+  upload-dir: ./test-uploads
+  admin:
+    username: testadmin
+    password: TestAdmin123!

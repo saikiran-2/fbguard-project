@@ -1,0 +1,22 @@
+# Maven build output
+target/
+
+# Local uploaded files (real user data during dev testing - never commit this)
+uploads/
+test-uploads/
+
+# Environment files - if you ever create one of these for local convenience,
+# it must NEVER be committed, since it's the most common place real secrets
+# end up by accident.
+.env
+.env.local
+*.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Logs
+*.log
